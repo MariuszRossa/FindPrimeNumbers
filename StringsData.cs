@@ -13,10 +13,5 @@
 
         public const string ErrorFindingPrimeNb = "This cycle failed to find a prime number, calculation stopped.";
         #endregion
-
-        #region Cycle time configuration
-        public const int CycleDurationSec = 5;// 120;
-        public const int CycleWaitTimeSec = 0;// 60;
-        #endregion
     }
 }

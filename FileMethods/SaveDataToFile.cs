@@ -1,11 +1,10 @@
 ﻿using FindPrimeNumbers.Interfaces;
 using FindPrimeNumbers.Models;
-using FindPrimeNumbers.Properties;
 using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
@@ -14,15 +13,7 @@ namespace FindPrimeNumbers.FileMethods
 {
     public class SaveDataToFile : IXmlDataSave
     {
-        public string GetPatch { get => _patch; }
-
-        private string _patch;
-
-
-        public SaveDataToFile()
-        {
-            _patch = GetFileDirectory.Get();
-        }
+        public string GetPatch { get => GetFileDirectory.FilePatch; }
 
         public void Save(XmlDataModel cycleData)
         {
@@ -30,19 +21,16 @@ namespace FindPrimeNumbers.FileMethods
             {
                 if (!File.Exists(GetPatch))
                 {
-                    XmlDataModelList xmlList = new XmlDataModelList();
+                    XDocument doc = new XDocument(new XDeclaration("1.0", "utf-8", null),
 
-                    xmlList.XmlDataModels.Add(cycleData);
-
-                    XDocument doc = new XDocument(new XDeclaration("1.0", "utf-8", null));
-
-                    using (XmlWriter writer = doc.CreateWriter())
-                    {
-                        DataContractSerializer dcs = new DataContractSerializer(xmlList.GetType());
-
-                        dcs.WriteObject(writer, xmlList);
-
-                    }
+                        new XElement("Root",
+                        new XElement("CycleData",
+                             new XElement("App_Runtime_In_Second", cycleData.ElapsedTime),
+                             new XElement("Cycle", cycleData.CycleNumber),
+                             new XElement("Cycle_Runtime_In_Second", cycleData.CycleElapsedTime),
+                             new XElement("End_Time", cycleData.CycleEndTime),
+                             new XElement("Start_Time", cycleData.CycleStartTime),
+                             new XElement("Value", cycleData.FoundValue))));
 
                     doc.Root.Save(GetPatch);
                 }
@@ -61,7 +49,7 @@ namespace FindPrimeNumbers.FileMethods
             {
                 XDocument document = XDocument.Load(GetPatch);
 
-                document.Root.Elements().FirstOrDefault()
+                document.Root
                     .Add(
                     new XElement("CycleData",
                      new XElement("App_Runtime_In_Second", cycleData.ElapsedTime),
@@ -71,13 +59,6 @@ namespace FindPrimeNumbers.FileMethods
                      new XElement("Start_Time", cycleData.CycleStartTime),
                      new XElement("Value", cycleData.FoundValue)
                      ));
-
-                foreach (var node in document.Root.Descendants().Where(n => n.Name.NamespaceName == ""))
-                {
-                    node.Attributes("xmlns").Remove();
-
-                    node.Name = node.Parent.Name.Namespace + node.Name.LocalName;
-                }
 
                 document.Save(GetPatch);
             }

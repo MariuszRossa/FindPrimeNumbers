@@ -1,4 +1,5 @@
 ﻿using FindPrimeNumbers.Interfaces;
+using FindPrimeNumbers.Models;
 using FindPrimeNumbers.PrimeCalculator;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,9 +20,9 @@ namespace FindPrimeNumbers.Extensions
         public void StartTask()
         {
             CancelSource = new CancellationTokenSource();
-
-            if (StringsData.CycleWaitTimeSec > 0) {
-                CancelSource.CancelAfter(StringsData.CycleWaitTimeSec * 1000);
+    
+            if (CycleRunTimesModel.CycleWaitTimeSec > 0) {
+                CancelSource.CancelAfter(CycleRunTimesModel.CycleDurationSec * 1000);
             }
 
             Task.Run(() =>

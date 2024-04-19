@@ -36,6 +36,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -48,11 +49,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions\LongtryParse.cs" />
+    <Compile Include="Extensions\NumericTryParse.cs" />
     <Compile Include="Extensions\TaskSchedulerExtension.cs" />
     <Compile Include="Extensions\TextBoxRefresh.cs" />
     <Compile Include="FileMethods\GetFileDirectory.cs" />
-    <Compile Include="FileMethods\ReadDataFromFile.cs" />
     <Compile Include="Forms\PrimeNumberCalculator.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -61,6 +61,7 @@
     </Compile>
     <Compile Include="Interfaces\ICalculate.cs" />
     <Compile Include="Interfaces\IXmlDataSave.cs" />
+    <Compile Include="Models\CycleRunTimesModel.cs" />
     <Compile Include="Models\TimerModel.cs" />
     <Compile Include="Models\XmlDataModel.cs" />
     <Compile Include="PrimeCalculator\Calculate.cs" />

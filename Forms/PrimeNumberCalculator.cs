@@ -33,16 +33,9 @@ namespace FindPrimeNumbers.Forms
             _calculate = new Calculate();
 
             taskSchedulerExtension = new TaskSchedulerExtension();
-            stopWatch = new Stopwatch();
 
-            cycleTimer = new System.Timers.Timer()
-            {
-                Interval = 1000,
-                AutoReset = true,
-                Enabled = true
-            };
-            cycleTimer.Stop();
-            cycleTimer.Elapsed += OnTimedEvent;
+            ConfigureTimers();
+            SetSaveLocalization();
         }
 
         private void buttonStart1_Click(object sender, EventArgs e)
@@ -55,6 +48,7 @@ namespace FindPrimeNumbers.Forms
             cycleData = new XmlDataModel();
             cycleData.CycleStartTime = timerData.StartTime;
 
+            SetCycleTimes();
             TextBoxSetData();
             SetTimer();
         }
@@ -62,10 +56,48 @@ namespace FindPrimeNumbers.Forms
         private void buttonStop2_Click(object sender, EventArgs e)
         {
             StopTimers();
+            SetNumericUpDownReadOnly(false);
 
-            if (StringsData.CycleWaitTimeSec <= 0) {
+            if (CycleRunTimesModel.CycleWaitTimeSec <= 0) {
                 taskSchedulerExtension.CancelSource.Cancel();
             }
+        }
+
+        private void buttonSave3_Click(object sender, EventArgs e)
+        {
+            GetFileDirectory.SetPatch();
+            SetSaveLocalization();
+        }
+
+        private void SetCycleTimes()
+        {
+            CycleRunTimesModel.CycleDurationSec = NumericTryParse.IntTryParse(numericUpDownCycleDur1.Value);
+            CycleRunTimesModel.CycleWaitTimeSec = NumericTryParse.IntTryParse(numericUpDownCycleWait2.Value);
+
+            timerData.CycleDurationSec = CycleRunTimesModel.CycleDurationSec;
+            timerData.CycleWaitTimeSec = CycleRunTimesModel.CycleWaitTimeSec;
+
+            SetNumericUpDownReadOnly(true);
+        }
+
+        private void SetNumericUpDownReadOnly(bool status)
+        {
+            numericUpDownCycleDur1.ReadOnly = status;
+            numericUpDownCycleWait2.ReadOnly = status;
+        }
+
+        private void ConfigureTimers()
+        {
+            cycleTimer = new System.Timers.Timer()
+            {
+                Interval = 500,
+                AutoReset = true,
+                Enabled = true
+            };
+            cycleTimer.Stop();
+            cycleTimer.Elapsed += OnTimedEvent;
+
+            stopWatch = new Stopwatch();
         }
 
         private void SetTimer()
@@ -86,9 +118,7 @@ namespace FindPrimeNumbers.Forms
         }
         private void OnTimedEvent(Object source, System.Timers.ElapsedEventArgs e)
         {
-            TextBoxSetData();
-
-            if (StringsData.CycleWaitTimeSec > 0)
+            if (CycleRunTimesModel.CycleWaitTimeSec > 0)
             {
                 //pause condition
                 if (Math.Round(stopWatch.Elapsed.TotalSeconds) ==
@@ -103,15 +133,7 @@ namespace FindPrimeNumbers.Forms
 
                     SetCycleData();
 
-                    _xmlDataSave.Save(cycleData);
-
-                    if (timerData.FundedPrimeNumber == Calculate.CalculatedValue)
-                    {
-                        StopTimers();
-                        MessageBox.Show(StringsData.ErrorFindingPrimeNb);
-                    }
-
-                    timerData.FundedPrimeNumber = Calculate.CalculatedValue;
+                    CheckPrimeNb();
                 }
                 //start condition
                 else if (stopWatch.Elapsed.TotalSeconds >=
@@ -128,18 +150,18 @@ namespace FindPrimeNumbers.Forms
                     timerData.CurrentCycle++;
                 }
             }
-            else if (Math.Round(stopWatch.Elapsed.TotalSeconds) ==
+            else if (Math.Floor(stopWatch.Elapsed.TotalSeconds) ==
                     timerData.CycleDurationSec *
-                    timerData.CurrentCycle +
-                    timerData.CycleWaitTimeSec *
-                    (timerData.CurrentCycle - 1))
+                    timerData.CurrentCycle)
             {
                 SetCycleData();
 
-                _xmlDataSave.Save(cycleData);
-
                 timerData.CurrentCycle++;
+
+                CheckPrimeNb();
             }
+
+            TextBoxSetData();
         }
 
         private void SetCycleData()
@@ -149,15 +171,36 @@ namespace FindPrimeNumbers.Forms
             cycleData.CycleElapsedTime = (DateTime.Now - cycleData.CycleStartTime).TotalSeconds;
             cycleData.CycleEndTime = DateTime.Now;
             cycleData.ElapsedTime = (cycleData.CycleEndTime - timerData.StartTime).TotalSeconds;
+
+            _xmlDataSave.Save(cycleData);
+
+            cycleData.CycleStartTime = DateTime.Now;
         }
 
         private void TextBoxSetData()
         {
-            timerData.ElapsedTime = LongTryParse.TryParse((DateTime.Now - timerData.StartTime).Seconds.ToString());
+            timerData.ElapsedTime = NumericTryParse.LongTryParse((DateTime.Now - timerData.StartTime).TotalSeconds);
 
             TextBoxRefresh.RefreshText(textBoxClock1, timerData.ElapsedTime);
-            TextBoxRefresh.RefreshText(textBoxPrimeNumber3, Calculate.CalculatedValue);
             TextBoxRefresh.RefreshText(textBoxCycleNumber2, timerData.CurrentCycle);
+            TextBoxRefresh.RefreshText(textBoxPrimeNumber3, Calculate.CalculatedValue);
+        }
+
+        private void SetSaveLocalization()
+        {
+            textBoxSaveLoc4.Text = GetFileDirectory.FilePatch;
+        }
+
+        private void CheckPrimeNb()
+        {
+            if (Calculate.CalculatedValue == timerData.FundedPrimeNumber)
+            {
+                StopTimers();
+                taskSchedulerExtension.CancelSource.Cancel();
+                MessageBox.Show(StringsData.ErrorFindingPrimeNb);
+            }
+
+            timerData.FundedPrimeNumber = Calculate.CalculatedValue;
         }
     }
 }
