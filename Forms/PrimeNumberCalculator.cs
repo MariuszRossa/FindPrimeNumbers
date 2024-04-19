@@ -143,6 +143,8 @@ namespace FindPrimeNumbers.Forms
                         timerData.CurrentCycle &&
                         timerData.waitTime == true)
                 {
+                    cycleData.CycleStartTime = DateTime.Now;
+
                     timerData.waitTime = false;
 
                     taskSchedulerExtension.StartTask();
@@ -155,6 +157,8 @@ namespace FindPrimeNumbers.Forms
                     timerData.CurrentCycle)
             {
                 SetCycleData();
+                
+                cycleData.CycleStartTime = DateTime.Now;
 
                 timerData.CurrentCycle++;
 
@@ -173,8 +177,6 @@ namespace FindPrimeNumbers.Forms
             cycleData.ElapsedTime = (cycleData.CycleEndTime - timerData.StartTime).TotalSeconds;
 
             _xmlDataSave.Save(cycleData);
-
-            cycleData.CycleStartTime = DateTime.Now;
         }
 
         private void TextBoxSetData()
